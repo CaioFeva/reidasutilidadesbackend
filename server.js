@@ -21,7 +21,7 @@ pool
   .then(() => console.log("Conectado ao banco de dados PostgreSQL"))
   .catch((err) => console.error("Erro ao conectar ao banco de dados", err));
 
-app.get("/api/produto/:id", async (req, res) => {
+app.get("/produto/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query("SELECT * FROM produto WHERE id = $1", [
@@ -45,7 +45,7 @@ app.get("/api/produto/:id", async (req, res) => {
   }
 });
 
-app.get("/api/produtos", async (req, res) => {
+app.get("/produtos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM produto");
     const produtos = result.rows.map((produto) => ({
@@ -59,7 +59,7 @@ app.get("/api/produtos", async (req, res) => {
   }
 });
 
-app.post("/api/produtos", async (req, res) => {
+app.post("/produtos", async (req, res) => {
   const {
     name,
     description,
@@ -108,7 +108,7 @@ app.post("/api/produtos", async (req, res) => {
 });
 
 // Endpoint PUT para atualizar um produto existente
-app.put("/api/produtos/:id", async (req, res) => {
+app.put("/produtos/:id", async (req, res) => {
   const { id } = req.params;
   const {
     name,
@@ -164,7 +164,7 @@ app.put("/api/produtos/:id", async (req, res) => {
 });
 
 // Endpoint DELETE para excluir um produto
-app.delete("/api/produtos/:id", (req, res) => {
+app.delete("/produtos/:id", (req, res) => {
   const { id } = req.params;
 
   const produtoExistente = produtos.find((produto) => produto.id === id);
