@@ -11,9 +11,9 @@ app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    }
+    // ssl: {
+    //   rejectUnauthorized: false
+    // }
 });
 
 pool
@@ -121,13 +121,14 @@ app.put("/api/produtos/:id", async (req, res) => {
     category,
   } = req.body;
 
+  console.log("images",images);
+  
   try {
     // Verifica se o produto existe
     const result = await pool.query("SELECT * FROM produto WHERE id = $1", [
       id,
     ]);
 
-    console.log("result", result);
     
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Produto não encontrado" });
