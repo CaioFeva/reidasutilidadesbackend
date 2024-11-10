@@ -11,9 +11,6 @@ app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-    // ssl: {
-    //   rejectUnauthorized: false
-    // }
 });
 
 pool
@@ -121,15 +118,14 @@ app.put("/produtos/:id", async (req, res) => {
     category,
   } = req.body;
 
-  console.log("images",images);
-  
+  console.log("images", images);
+
   try {
     // Verifica se o produto existe
     const result = await pool.query("SELECT * FROM produto WHERE id = $1", [
       id,
     ]);
 
-    
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Produto não encontrado" });
     }
@@ -174,6 +170,100 @@ app.delete("/produtos/:id", (req, res) => {
 
   produtos = produtos.filter((produto) => produto.id !== id);
   res.status(204).send();
+});
+
+app.get("/categoria", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM categorias");
+
+    const categories = result.rows.map((row) => row.category);
+
+    res.json(categories);
+  } catch (error) {
+    console.error("Erro ao buscar categorias:", error);
+    res.status(500).json({ error: "Erro ao buscar categorias" });
+  }
+});
+
+app.post("/categoria", async (req, res) => {
+  const { category } = req.body;
+
+  if (!category) {
+    return res
+      .status(400)
+      .json({ error: "Os campos categoria é obrigatórios" });
+  }
+
+  try {
+    const query = ` INSERT INTO public.categorias (category)
+                    VALUES($1)
+                    RETURNING *;`;
+
+    const values = [category];
+
+    const result = await pool.query(query, values);
+    const newCategory = result.rows[0];
+
+    res.status(201).json(newCategory);
+  } catch (error) {
+    console.error("Erro ao inserir categoria:", error);
+    res.status(500).json({ error: "Erro ao inserir categoria" });
+  }
+});
+
+app.get("/boleto", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM boletos");
+
+    const boletos = result.rows.map((row) => ({
+      id: row.id,
+      customername: row.customername,
+      cpfcpnj: row.cpfcpnj,
+      amount: row.amount,
+      duedate: row.duedate,
+      description: row.description,
+      status: row.status,
+    }));
+
+    res.json(boletos);
+  } catch (error) {
+    console.error("Erro ao buscar boletos:", error);
+    res.status(500).json({ error: "Erro ao buscar boletos" });
+  }
+});
+
+app.post("/boleto", async (req, res) => {
+  const { customerName, cpfcnpj, amount, dueDate, description, status } =
+    req.body;
+
+  if ((!customerName, !cpfcnpj, !amount, !dueDate, !description, !status)) {
+    return res
+      .status(400)
+      .json({ error: "Os campos categoria é obrigatórios" });
+  }
+
+  try {
+    const query = ` INSERT INTO public.boletos (customername, cpfcpnj, amount, duedate, description, status)
+                    VALUES($1,$2,$3,$4,$5,$6)
+                    RETURNING *;`;
+
+    const values = [
+      customerName,
+      cpfcnpj,
+      amount,
+      dueDate,
+      description,
+      status,
+    ];
+
+    const result = await pool.query(query, values);
+    const newBoleto = result.rows[0];
+
+    res.status(201).json(newBoleto);
+  } catch (error) {
+    console.error("Erro ao inserir boleto:", error);
+    res.status(500).json({ error: "Erro ao inserir boleto" });
+  }
 });
 
 app.listen(port, () => {
